@@ -1,0 +1,17 @@
+<div class="post-wrapper">
+    <ul class="pagination">
+        <li ng-class="{disabled:conf.currentPage === 1}">
+            <a href="javascript:void(0);" ng-click="prePage()" aria-label="Previous">
+        <span>&laquo;</span>
+      </a>
+        </li>
+        <li ng-repeat="item in pageList track by $index" ng-class="{active:item === conf.currentPage}">
+            <a href="javascript:void(0);" ng-click="changeCurrentPage(item)">{{item}}</a>
+        </li>
+        <li ng-class="{disabled:conf.currentPage === pageNum}">
+            <a class="page-link" href="javascript:void(0);" ng-click="nextPage()" aria-label="Next">
+        <span>&raquo;</span>
+      </a>
+        </li>
+    </ul>
+</div>

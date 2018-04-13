@@ -1,0 +1,23 @@
+<div blg-menu menu-title="AngularJS Blog"></div>
+<div id="container" class="container">
+    <div class="blog-post-label">Blog Posts</div>
+    <pagination conf="paginationConf"></pagination>
+    <div class="post-wrapper">
+        <div ng-repeat="blogPost in blogList">
+            <div class="blog-post-outer">
+                <div class="blog-intro-text">
+                    Posted: {{blogPost.date | date: 'MM/dd/yyyy @ h:mma'}}
+                </div>
+                <div class="blog-intro-text">
+                    <img class="img-banner-wrapper" ng-show="blogPost.img" src="http://localhost:8080/{{blogPost.img}}" />
+                </div>
+                <div class="blog-intro-text">
+                    Intro: {{blogPost.introText}}
+                </div>
+                <div class="blog-read-more">
+                    <a href="#!blogPost/{{blogPost._id}}">read more</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
