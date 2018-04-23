@@ -1,8 +1,8 @@
 /*
  * @Author: Administrator
  * @Date:   2018-01-02 14:44:07
- * @Last Modified by:   Administrator
- * @Last Modified time: 2018-01-19 16:13:42
+ * @Last Modified by:   p-nickzhang-q
+ * @Last Modified time: 2018-04-23 15:22:38
  */
 
 
@@ -17,14 +17,20 @@ const UserSchema = new Schema({
 });
 var UserModel = mongoose.model('user', UserSchema);
 
+const CommentSchema = new Schema({
+    commentText: String,
+    date: Date
+});
+
 const BlogSchema = new Schema({
     introText: String,
     blogText: String,
     languageId: Number,
     date: Date,
-    comments: [{ commentText: String, date: Date }],
+    comments: [CommentSchema],
     img: String
 });
+
 var BlogModel = mongoose.model('blog', BlogSchema);
 
 /*------------------------------------------------------------------*/
@@ -81,6 +87,26 @@ var updateBlog = function(id, blog, callback) {
     });
 };
 
+var deleteBlog = function(id, callback) {
+    BlogModel.deleteOne({ '_id': id }, function(err) {
+        if (err) {
+            console.error(err);
+        } else {
+            callback(err);
+        }
+    });
+}
+
+var deleteComment = function(blogid, commentId, callback) {
+    var content = { $pull: { comments: { _id: commentId } } };
+    updateBlog(blogid, content, callback);
+};
+
+var addComment = function(blogid, comment, callback) {
+    var content = { $push: { comments: comment } };
+    updateBlog(blogid, content, callback);
+};
+
 /*------------------------------------------------------------------*/
 module.exports = {
     login: function(username, callback) {
@@ -125,6 +151,33 @@ module.exports = {
                 console.error(err)
             } else {
                 updateBlog(id, blog, callback);
+            }
+        })
+    },
+    deleteBlog: function(id, callback) {
+        mongoose.connect(DB_CONN_STR, function(err) {
+            if (err) {
+                console.error(err)
+            } else {
+                deleteBlog(id, callback);
+            }
+        })
+    },
+    deleteComment: function(blogid, commentId, callback) {
+        mongoose.connect(DB_CONN_STR, function(err) {
+            if (err) {
+                console.error(err)
+            } else {
+                deleteComment(blogid, commentId, callback);
+            }
+        })
+    },
+    addComment: function(blogid, comment, callback) {
+        mongoose.connect(DB_CONN_STR, function(err) {
+            if (err) {
+                console.error(err)
+            } else {
+                addComment(blogid, comment, callback);
             }
         })
     }

@@ -1,10 +1,37 @@
 'use strict';
 
+
+const editorMenus = [
+    'head', // 标题
+    'bold', // 粗体
+    'fontSize', // 字号
+    'fontName', // 字体
+    'italic', // 斜体
+    'underline', // 下划线
+    'strikeThrough', // 删除线
+    'foreColor', // 文字颜色
+    'backColor', // 背景颜色
+    'link', // 插入链接
+    'list', // 列表
+    'justify', // 对齐方式
+    //    'quote', // 引用
+    'emoticon', // 表情
+    'image', // 插入图片
+    'table', // 表格
+    //    'video', // 插入视频
+    //    'code', // 插入代码
+    'undo', // 撤销
+    'redo' // 重复
+]
+
+/*--------------------------------------------------*/
+
+
 var blogControllers = angular.module('blogControllers', ['angularFileUpload']);
 
 blogControllers.controller('BlogCtrl', ['$scope', 'BlogList', '$location',
-    'checkCreds',
-    function($scope, BlogList, $location, checkCreds) {
+    'checkCreds', 'BlogPost',
+    function($scope, BlogList, $location, checkCreds, BlogPost) {
         if (!checkCreds()) {
             $location.path('/login');
         }
@@ -33,6 +60,17 @@ blogControllers.controller('BlogCtrl', ['$scope', 'BlogList', '$location',
             });
         };
 
+        $scope.deleteBlog = function(id) {
+            var r = confirm("really?");
+            if (r == true) {
+                BlogPost.del({ 'id': id }, function success(res) {
+                    $scope.paginationConf.changePage();
+                }, function error(errRes) {
+                    console.log("error: " + JSON.stringify(errRes));
+                })
+            }
+        }
+
         $scope.queryList();
 
     }
@@ -53,15 +91,52 @@ blogControllers.controller('BlogViewCtrl', [
         if (!checkCreds()) {
             $location.path('/login');
         }
+        $scope.load = function() {
+            var E = window.wangEditor;
+            var blogTextEditor = new E('#blogTextEditor');
+            blogTextEditor.customConfig.menus = editorMenus;
+            blogTextEditor.create();
+            $scope.blogTextEditor = blogTextEditor;
+        };
         var blogId = $routeParams.id;
         BlogPost.get({
             id: blogId
         }, function success(response) {
             console.log("success: " + JSON.stringify(response));
             $scope.blogEntry = response;
+            $scope.blogTextEditor.txt.html(response.blogText);
         }, function error(errorResponse) {
             console.log("error: " + JSON.stringify(errorResponse));
         });
+
+        $scope.updateBlog = function() {
+            if (confirm("really?")) {
+                var postData = { id: blogId, blogText: $scope.blogTextEditor.txt.html() };
+                BlogPost.update(postData, function success(res) {
+                    console.log("success: " + JSON.stringify(res));
+                    $location.path('/blogPost/' + blogId);
+                    $route.reload();
+                }, function error(errRes) {
+                    console.log("error: " + JSON.stringify(errRes));
+                });
+            };
+        };
+
+        $scope.deleteComment = function(id) {
+            if (confirm("really?")) {
+                var queryData = {
+                    'blogId': blogId,
+                    'commentId': id
+                };
+                BlogPostComments.del(queryData, function success(res) {
+                    console.log("success: " + JSON.stringify(res));
+                    $location.path('/blogPost/' + blogId);
+                    $route.reload();
+                }, function error(errRes) {
+                    console.log("error: " + JSON.stringify(errRes));
+                })
+            }
+        }
 
         $scope.submit = function() {
             $scope.sub = true;
@@ -127,6 +202,13 @@ blogControllers.controller('LogoutCtrl', ['$location', 'deleteCreds',
 blogControllers.controller('NewBlogPostCtrl', ['$scope', 'BlogPost', '$location', 'checkCreds', '$http', 'getToken', 'FileUploader',
     function($scope, BlogPost, $location, checkCreds, $http, getToken, FileUploader) {
         upload($scope, FileUploader);
+        $scope.load = function() {
+            var E = window.wangEditor;
+            var blogTextEditor = new E('#blogTextEditor');
+            blogTextEditor.customConfig.menus = editorMenus;
+            blogTextEditor.create();
+            $scope.blogTextEditor = blogTextEditor;
+        };
         if (!checkCreds()) {
             $location.path('/login');
         }
@@ -147,7 +229,7 @@ blogControllers.controller('NewBlogPostCtrl', ['$scope', 'BlogPost', '$location'
                 console.info('onCompleteItem', fileItem, response, status, headers);
                 var postData = {
                     introText: $scope.introText,
-                    blogText: $scope.blogText,
+                    blogText: $scope.blogTextEditor.txt.html(),
                     languageId: $scope.languageId,
                     img: response.path
                 };

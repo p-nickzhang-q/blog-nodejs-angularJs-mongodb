@@ -1,8 +1,8 @@
 /*
  * @Author: Administrator
  * @Date:   2018-01-04 14:51:31
- * @Last Modified by:   Administrator
- * @Last Modified time: 2018-01-19 16:12:26
+ * @Last Modified by:   p-nickzhang-q
+ * @Last Modified time: 2018-04-20 16:03:11
  */
 
 const express = require('express');
@@ -68,6 +68,36 @@ module.exports = function() {
         returns.path = upload(req);
         console.log(returns);
         res.send(returns);
+    });
+
+    router.delete('/blogPost', function(req, res) {
+        console.log('blogPost delete');
+        var returns = {};
+        dao.deleteBlog(req.query.id, function(err) {
+            if (err == null) {
+                console.log(returns);
+                res.send(returns).end();
+            } else {
+                res.status(500).send('database err').end();
+            }
+        })
+    });
+
+    router.put('/blogPost', function(req, res) {
+        console.log('blogPost put');
+        var returns = {};
+        var postData = req.body;
+        console.log(postData);
+        //var update  = {$set : {age : 27, title : 'model_demo_title_update'}};
+        var update = { $set: { blogText: postData.blogText } };
+        dao.updateBlog(postData.id, update, function(err) {
+            if (err == null) {
+                console.log(returns);
+                res.send(returns).end();
+            } else {
+                res.status(500).send('database err').end();
+            }
+        })
     });
 
     return router;
